@@ -1,0 +1,60 @@
+# Set default options for PETSc. These options should
+# override the ones given in the watershed input file and 
+# they should be overridden by options given from
+# the command line
+-error_output_none	
+#-snes_view
+-snes_monitor
+-snes_convergence_reason
+#-ksp_monitor
+#-ksp_monitor_true_residual
+-snes_rtol 1e-7
+#-snes_atol 1e-50
+-snes_max_it 100
+
+-ksp_type gmres           
+-ksp_rtol 1.0e-8        
+-ksp_gmres_restart 100     
+-ksp_max_it  1000    
+
+-pc_type gamg
+-pc_parms_max_it 100
+-pc_parms_solve_tol 1.0e-5
+#-pc_factor_shift_type NONZERO
+#-pc_factor_shift_amount 1.0e-10
+-pc_gamg_sym_graph true
+
+####### KSP_types##################################
+#Richardson   	       	   	    	  richardson
+#Chebyshev			    	  chebyshev
+#Conjugate			    	  cg
+#BiConjugate Gradient 		    	  bicg
+#Generalized Minimal Residual  	    	  gmres
+#Flexible Generalized Minimal Residual 	  fgmres
+#Deflated Generalized Minimal Residual 	  dgmres
+#Generalized Conjugate Residual 	  gcr
+#BiCGSTAB    	      			  bcgs
+#Conjugate Gradient Squared 		  cgs
+#Transpose-Free Quasi-Minimal Residual(1) tfqmr
+#Transpose-Free Quasi-Minimal Residual(2) tcqmr
+#Conjugate Residual      	      	  cr
+#Least Squares Method  			  lsqr
+#Shell for no KSP method KSPPREONLY 	  preonly
+
+#### PC Types####################################
+#No preconditioning default	none
+#Jacobi 	    		jacobi
+#Block Jacobi			bjacobi
+#SOR (and SSOR) 		sor
+#SOR with Eisenstat trick 	eisenstat
+#Incomplete Cholesky 		icc
+#Incomplete LU 			ilu
+#Additive Schwarz 		asm
+#Generalized Additive Schwarz 	gasm
+#Algebraic Multigrid  		gamg
+#Balancing Domain Decomp	bddc
+#Linear solver 	  		ksp
+#Combination of preconditioners	composite
+#LU 	     			lu
+#Cholesky 			cholesky
+#Shell for user-defined PC 	shell

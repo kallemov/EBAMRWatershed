@@ -1,0 +1,39 @@
+C      _______              __
+C     / ___/ /  ___  __ _  / /  ___
+C    / /__/ _ \/ _ \/  V \/ _ \/ _ \
+C    \___/_//_/\___/_/_/_/_.__/\___/
+C    Please refer to Copyright.txt, in Chombo's root directory.
+
+#include "CONSTANTS.H"
+
+        subroutine SETDIRICHLETRICHARDSFACEFLUX(
+     &    CHF_FRA1[faceFlux],
+     &    CHF_CONST_FRA1[phi],
+     &    CHF_CONST_REAL[value],
+     &    CHF_CONST_REALVECT[dx],
+     &    CHF_CONST_INT[idir],
+     &    CHF_CONST_INT[iside],
+     &    CHF_BOX[box])
+
+        integer CHF_DDECL[i;j;k]
+
+        real_t ihdx
+
+        ihdx = two/dx(idir)
+
+        CHF_MULTIDO[box;i;j;k]
+
+c        valueZ = value
+c         if (idir.eq.2) then
+c           valueZ = valueZ + (0.5d0+real(k))*dx(2)
+c         endif
+   
+        faceFlux(CHF_IX[i;j;k]) = iside * ihdx * (phi(CHF_IX[i;j;k]) - value)
+
+
+        CHF_ENDDO
+
+        return
+        end
+
+  

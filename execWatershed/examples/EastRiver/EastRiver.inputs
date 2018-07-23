@@ -1,0 +1,232 @@
+######## Time Integrator parameters #######
+###########################################
+max_step  	      = 2000000
+max_time              = 30000000.0
+
+initial_dt              = 0.1
+grow_dt_factor          = 2.0 
+max_dt                  = 1000.0
+
+#use smaller time step by grow_dt_factor if diverged for current time step
+rerun_smaller_dt        = true
+
+#not implemented yet
+order_time            = 1
+
+checkpoint_interval   = 200
+plot_interval	      = 200
+regrid_interval	      = 1000000
+verbosity	      = 5
+
+########## Grid parameters #################
+############################################
+domain_length         = 4040.0 5200.00 1300.00
+##domain_length         = 500.0 500.00 1300.00
+
+n_cell                = 2020 2600 20
+
+max_grid_size	      = 64
+
+#############################################
+#AMR options
+max_level	      = 0
+ref_ratio	      =  2 2 
+fill_ratio	      = 0.7
+block_factor	      = 2
+nesting_radius	      = 2
+tag_buffer	      = 2 
+refine_threshold      = 0.1
+
+##refine all irregular cells (all surface cells if solve_overland_flow==true)
+refine_all_irregular  = false
+
+######## Geometry parameters ################
+############################################
+
+##threshold to remove tiny vofs for stability
+#(must be less than 1.0, use 0.0 to include all possible irregular cells)
+threshold_vof = 0.0
+
+###geometry flag
+
+#3- DEM model geometry 
+which_geom = 3
+
+# Digital Elevation Model data file
+DEM_file = copper_stamp_zero_smoothed_10.dem
+
+#bottomBuffer is space added below the bathymetry, 
+#  (the distance from the deepest spot to the domain box)
+bottomElevation = 2900
+
+#highGround is the elevation given for nodata points with all land neighbors (useful for higher order interpolation)
+highGround = 1.0e+99
+
+## These scalars defines the stores dem parameter as
+## dem_value = verticalScale*(origin_shift + read_dem_value*cellvalue)
+#verticalScale 
+verticalScale = 1.0
+
+#conversion coeff for DEM values   
+cellvalue = 1.0
+
+
+# interpType = 1 -> bilinear interpolation
+# interpType = 2 -> bicubic interpolation type1 (this performs cubic interpolation in 1D, matching all value)
+# interpType = 3 -> bicubic interpolation type2 (this performs cubic interpolation in 1D, matching values and derivatives)
+interpType = 3
+
+###### General solver parameters  #############
+###############################################
+
+#set EBBC to overland flow or Neumann type muParser input
+solve_overland_flow = true
+
+#solve only irregular cells for a surface flow
+include_subsurface_solver = true 
+
+#evaluate parameters as cell centered for irregular cells
+#otherwise at centroid positions
+irregular_value_cc = false
+
+###############################################
+#### Subsurface solver parameters  ############
+###############################################
+
+//method for averaging relative permeability to faces
+//0-harmonic, 1-one-point-upstream
+permeability_averaging_method = 1
+
+#make water table depth to be 1m along the line
+init_pressurehead = "1000.0-z"
+
+#setting a space and time dependent source term in the surface(overland) 
+#as a function (x,y) and time t example "cos(x)*cos(y)*exp(-0.001*t)"
+#ebbc_sourcevalue_func = "(0.2+cos(t))*sin(x)*sin(y)"
+#if solve_overland_flow==false, the following parameter must be set
+#to the surface-subsurface interface Darcy flux value [L/T]
+#as a function of the location coordinates
+ebbc_sourcevalue_func = "(t<=200.0) ? 3.3e-4 : 0.0"
+##ebbc_sourcevalue_func = "0.0"
+
+#print surface output rate in the file (OutputRate.dat)
+surface_output_rate = false
+
+### Domain BCs: 1 is Dirichlet, 0 is Neumann
+#Use muParser input to set BC function as a function of location coordinates (x,y,z)
+#example "(10-z)"
+
+subsurface_domain_Lo_X_type = 0
+subsurface_domain_Lo_X_func = "0.0"
+
+subsurface_domain_Lo_Y_type = 0
+subsurface_domain_Lo_Y_func = "0.0"
+
+subsurface_domain_Lo_Z_type = 0
+subsurface_domain_Lo_Z_func = "0.0"
+
+subsurface_domain_Hi_X_type = 0
+subsurface_domain_Hi_X_func = "0.0"
+
+subsurface_domain_Hi_Y_type = 0
+subsurface_domain_Hi_Y_func = "0.0"
+
+subsurface_domain_Hi_Z_type = 0
+subsurface_domain_Hi_Z_func = "0.0"
+
+###########
+
+#Specific storage
+Ss    =  "5.0e-4"
+
+#Saturated hydraulic conductivity
+#Kx    = "(z>=0.2-0.0005*x) ? 6.94e-6 : 1.e-16"  "(z>=0.2-0.0005*x) ? 6.94e-6 : 1.e-16"  "(z>=0.2-0.0005*x) ? 6.94e-6 : 1.e-16"
+Kx    = "1.0e-5" "1.0e-5" "1.0e-5"
+
+#porosity of the medium
+porosity = "0.4"
+
+#water density (default value 1.0)
+rho     = "1.0"
+
+#water viscosity (default value 1.0)
+viscosity = 1.0
+
+#gravitational constant (default value 1.0)
+gravity = 1.0
+
+## van Genuchten parameters ###################
+#relative saturated water content (default 1.0)
+Ssat   =  1.0
+#Relative residual saturation
+Sres   =  0.2
+#soil parameters 
+alpha_soil  = 1.0
+n_soil      = 2.0
+
+#########
+
+###### Surface solver parameters  #############
+###############################################
+surfaceBC_Lo_X_func = "0.0"
+surfaceBC_Lo_Y_func = "0.0"
+#surfaceBC_Hi_X_func = "sqrt(abs(slope)) * psi^(5./3.) / 3.31e-4"
+surfaceBC_Hi_X_func = "0.0"
+surfaceBC_Hi_Y_func = "0.0"
+
+#type of the surface solver 0-KineticWave, 1-
+surface_solver_type = 0
+
+#Kinetic Wave model parameters
+ManningCoeff = "3.31e-4"
+
+#set friction slopes in surface kinetic wave equation as muParser input (X,Y)
+#"auto" will use a local normal vector to compute slopes at each irregular cell
+#friction_slopes = "-0.0005" "0.0"
+friction_slopes = "auto" "auto"
+
+use_bc_regularization = false
+###############################################
+#### Nonlinear solver parameters ##############
+###############################################
+### !!! Note the options below will be overridden 
+### if provided by file "SNESOptions.dat"
+### which could be overridden by options given 
+### from the command line as standard snes options
+
+#set various petsc options here 
+#overides all others, except from the command line
+petsc_options_file = "PetscOptions.inputs"
+
+#SNES Parameters
+# SNES Types 1-newtonls, 2-newtontr, 3-nrichardson, 4-ncg
+# 5-qn, 6-fas, 7-nasm, 8-composite, 9-ngs, 10-anderson, 11-ngmres, 12-test
+SNESType = 1
+
+### use a matrix free form to compute a jacobian 
+#MatrixFree = true
+MatrixFree = false
+
+#compute Jacobian based on finite difference formula
+JacobianFD = true
+#JacobianFD = false
+
+#type of MFFD (1-DS or 2-WP), if JacobianFD==true and MatrixFree==true
+MFFD_type = 1
+
+#parameters for different MFFD types (see snes mannual)
+MFFD_DS_umin = 1.e-6
+MFFD_WP_normU = false
+
+JacobianFD_coloring = true
+
+remove_const_nullspace = false
+
+use_presolver = false
+num_presolver_iterations = 0
+
+#### Initial guess ######################
+########################################
+
+
+

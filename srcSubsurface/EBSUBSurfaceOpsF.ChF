@@ -1,0 +1,286 @@
+C      _______              __
+C     / ___/ /  ___  __ _  / /  ___
+C    / /__/ _ \/ _ \/  V \/ _ \/ _ \
+C    \___/_//_/\___/_/_/_/_.__/\___/
+C    Please refer to Copyright.txt, in Chombo's root directory.
+
+#include "CONSTANTS.H"
+
+cccccccccccccccc
+
+      subroutine getsaturationpoint(
+     &     chf_real[res],
+     &     chf_const_real[h],
+     &     chf_const_real[ssat],
+     &     chf_const_real[sres],
+     &     chf_const_real[alpha],
+     &     chf_const_real[nsoil])
+
+c    h is pressure head in L units
+
+      real_t swnew
+      real_t ahn, denomnew
+      real_t psi
+
+      if(h.lt.0.0d0) then
+
+      psi = abs(h)
+
+      ahn = (alpha*psi)**nsoil
+      denomnew = (1.0d0 + ahn) / ((1.d0+ahn)**(1.0d0/nsoil))
+
+      swnew = (ssat-sres) / denomnew
+      
+      res = swnew+sres
+
+      else
+
+      res = ssat
+
+      endif
+      
+      return
+      end 
+
+      subroutine getsaturationtermspoint(
+     &     chf_real[res],
+     &     chf_const_real[h],
+     &     chf_const_real[hold],
+     &     chf_const_real[ss],
+     &     chf_const_real[phi],
+     &     chf_const_real[rho],
+     &     chf_const_real[ssat],
+     &     chf_const_real[sres],
+     &     chf_const_real[alpha],
+     &     chf_const_real[nsoil])
+
+c    h is pressure head in L units
+
+      real_t swnew, swold
+      real_t ahn
+      real_t psiabs
+
+      if(h.lt.0.0d0) then
+
+      psiabs = abs(h)
+
+      ahn = (alpha*psiabs)**nsoil
+     
+      swnew = (ssat-sres) /  (1.0d0 + ahn) * ((1.d0+ahn)**(1.0d0/nsoil)) + sres
+      
+      else
+
+      swnew = ssat
+      
+      endif
+
+      if(hold.lt.0.0d0) then
+
+      psiabs = abs(hold)
+
+      ahn = (alpha*psiabs)**nsoil
+
+      swold = (ssat-sres) /  (1.0d0 + ahn) * ((1.d0+ahn)**(1.0d0/nsoil)) + sres
+      
+      else
+
+      swold = ssat
+
+      endif
+      
+      res = (swnew-swold)*phi + (h-hold)*swnew*ss
+      
+      return
+      end 
+
+cccccccccccccccc
+      subroutine addsaturationterms(
+     &     chf_fra1[fvec],
+     &     chf_const_fra1[h],
+     &     chf_const_fra1[hold],
+     &     chf_const_fra1[ss],
+     &     chf_const_fra1[phi],
+c     &     chf_const_fra1[rho],
+     &     chf_const_real[rho],
+     &     chf_const_real[ssat],
+     &     chf_const_real[sres],
+     &     chf_const_real[alpha],
+     &     chf_const_real[nsoil],
+     &     chf_box[box])
+
+      integer chf_ddecl[i   ;j   ;k   ]
+      real_t swnew, swold, tempres
+
+      chf_multido[box;i;j;k]
+      
+      call getsaturationtermspoint(tempres,
+     &                        h(chf_ix[i;j;k]),
+     &                        hold(chf_ix[i;j;k]),
+     &			      ss(chf_ix[i;j;k]),
+     &			      phi(chf_ix[i;j;k]),
+c     &			      rho(chf_ix[i;j;k]),
+     &			      rho,
+     &			      ssat,
+     &			      sres,
+     &			      alpha,
+     &			      nsoil);
+
+      fvec(chf_ix[i;j;k]) = fvec(chf_ix[i;j;k]) +tempres
+
+      chf_enddo
+      
+      return
+      end 
+      
+cccccccccccccccc
+
+      subroutine ccpharmmeancelltoface(
+     &     chf_fra1[faceval],
+     &     chf_const_fra1[cellval],
+     &     chf_const_int[facedir],
+     &     chf_box[facebox])
+
+      integer chf_ddecl[i;j;k]
+      integer chf_ddecl[ioff;joff;koff]
+
+      chf_dterm[
+      ioff = chf_id(0,facedir);
+      joff = chf_id(1,facedir);
+      koff = chf_id(2,facedir)]
+
+      chf_multido[facebox;i;j;k]
+
+      faceval(chf_ix[i;j;k]) = 2.0d0/
+     &     ( 1.0d0/cellval(chf_ix[i     ;j     ;k     ])
+     &     + 1.0d0/cellval(chf_ix[i-ioff;j-joff;k-koff]) )
+
+      chf_enddo
+
+      return
+      end
+cccccccccccccccc
+
+      subroutine relativepermeability(
+     &     chf_real[kr],
+     &     chf_const_real[h],
+     &     chf_const_real[alpha],
+     &     chf_const_real[nsoil],
+     &     chf_const_real[lambda])
+
+c    h is pressure head in L units
+
+      real_t ahn, ahnpower
+      real_t psi
+
+      if(h.lt.0.0d0) then
+      
+      psi = abs(h)
+
+c     Classical van Genuchten    
+      ahn = (alpha*psi)**nsoil
+      ahnpower = (1.0d0 + ahn) / ((1.0d0 + ahn)**(1.0d0 / nsoil))
+      kr = (1.0d0 - (ahn/(alpha*psi*ahnpower) ) )**2.0d0 / sqrt(ahnpower)
+
+      else
+  
+      kr = 1.0d0
+
+      endif
+
+      return
+      end
+
+cccccccccccccccc
+
+      subroutine multbyharmmeankr(
+     &     chf_fra1[faceval],
+     &     chf_const_fra1[h],
+     &     chf_const_real[alpha],
+     &     chf_const_real[nsoil],
+     &     chf_const_real[lambda],
+     &     chf_const_int[facedir],
+     &     chf_box[facebox])
+
+      integer chf_ddecl[i;j;k]
+      integer chf_ddecl[ioff;joff;koff]
+      real_t krl, krr, mean
+      chf_dterm[
+      ioff = chf_id(0,facedir);
+      joff = chf_id(1,facedir);
+      koff = chf_id(2,facedir)]
+
+      chf_multido[facebox;i;j;k]
+
+      call relativepermeability(krl,h(chf_ix[i-ioff;j-joff;k-koff]), alpha, nsoil, lambda) 
+      call relativepermeability(krr,h(chf_ix[i     ;j     ;k     ]), alpha, nsoil, lambda) 
+
+      mean = 2.0d0/
+     &     ( 1.0d0/krl
+     &     + 1.0d0/krr)
+    
+      faceval(chf_ix[i;j;k]) = faceval(chf_ix[i;j;k])*mean
+
+      chf_enddo
+
+      return
+      end
+
+cccccccccccccc
+      subroutine macdivergef(
+     &     chf_box[dcalc],
+     &     chf_fra[divf],
+     &     chf_const_fra[flux],
+     &     chf_const_int[facedir],
+     &     chf_const_int[nconserved],
+     &     chf_const_real[dx])
+
+      integer chf_ddecl[i; j; k]
+      integer chf_ddecl[ioff; joff; koff]
+      integer spacedim,iv
+
+      chf_dterm[
+      ioff = chf_id(0,facedir);
+      joff = chf_id(1,facedir);
+      koff = chf_id(2,facedir)]
+
+      spacedim = CH_SPACEDIM
+
+      do iv = 0,nconserved - 1
+
+         chf_multido[dcalc;i;j;k]
+
+         divf(chf_ix[i;j;k],iv) = divf(chf_ix[i;j;k],iv) +
+     &        (flux(chf_ix[i+ioff;j+joff;k+koff],iv)
+     &        -flux(chf_ix[i     ;j     ;k     ],iv))/dx
+
+         chf_enddo
+
+      enddo
+
+      return
+      end
+
+      subroutine ccpavefacetocell(
+     &     chf_fra1[cellgrad],
+     &     chf_const_fra1[facegrad],
+     &     chf_const_int[facedir],
+     &     chf_box[cellbox])
+
+      integer chf_ddecl[i; j; k]
+      integer chf_ddecl[ioff; joff; koff]
+
+      chf_dterm[
+      ioff = chf_id(0,facedir);
+      joff = chf_id(1,facedir);
+      koff = chf_id(2,facedir)]
+
+      chf_multido[cellbox;i;j;k]
+
+      cellgrad(chf_ix[i;j;k]) =
+     &     (facegrad(chf_ix[i+ioff;j+joff;k+koff])
+     &     +facegrad(chf_ix[i     ;j     ;k     ]))*half
+
+      chf_enddo
+
+      return
+      end

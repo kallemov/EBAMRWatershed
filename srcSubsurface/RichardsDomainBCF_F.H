@@ -1,0 +1,50 @@
+#ifndef _RICHARDSDOMAINBCF_F_H_
+#define _RICHARDSDOMAINBCF_F_H_
+
+#include "FORT_PROTO.H"
+#include "CH_Timer.H"
+#include "REAL.H"
+
+extern "C"
+{
+
+#ifndef GUARDSETDIRICHLETRICHARDSFACEFLUX 
+#define GUARDSETDIRICHLETRICHARDSFACEFLUX 
+// Prototype for Fortran procedure SETDIRICHLETRICHARDSFACEFLUX ...
+//
+void FORTRAN_NAME( SETDIRICHLETRICHARDSFACEFLUX ,setdirichletrichardsfaceflux )(
+      CHFp_FRA1(faceFlux)
+      ,CHFp_CONST_FRA1(phi)
+      ,CHFp_CONST_REAL(value)
+      ,CHFp_CONST_REALVECT(dx)
+      ,CHFp_CONST_INT(idir)
+      ,CHFp_CONST_INT(iside)
+      ,CHFp_BOX(box) );
+
+#define FORT_SETDIRICHLETRICHARDSFACEFLUX FORTRAN_NAME( inlineSETDIRICHLETRICHARDSFACEFLUX, inlineSETDIRICHLETRICHARDSFACEFLUX)
+#define FORTNT_SETDIRICHLETRICHARDSFACEFLUX FORTRAN_NAME( SETDIRICHLETRICHARDSFACEFLUX, setdirichletrichardsfaceflux)
+
+inline void FORTRAN_NAME(inlineSETDIRICHLETRICHARDSFACEFLUX, inlineSETDIRICHLETRICHARDSFACEFLUX)(
+      CHFp_FRA1(faceFlux)
+      ,CHFp_CONST_FRA1(phi)
+      ,CHFp_CONST_REAL(value)
+      ,CHFp_CONST_REALVECT(dx)
+      ,CHFp_CONST_INT(idir)
+      ,CHFp_CONST_INT(iside)
+      ,CHFp_BOX(box) )
+{
+ CH_TIMELEAF("FORT_SETDIRICHLETRICHARDSFACEFLUX");
+ FORTRAN_NAME( SETDIRICHLETRICHARDSFACEFLUX ,setdirichletrichardsfaceflux )(
+      CHFt_FRA1(faceFlux)
+      ,CHFt_CONST_FRA1(phi)
+      ,CHFt_CONST_REAL(value)
+      ,CHFt_CONST_REALVECT(dx)
+      ,CHFt_CONST_INT(idir)
+      ,CHFt_CONST_INT(iside)
+      ,CHFt_BOX(box) );
+}
+#endif  // GUARDSETDIRICHLETRICHARDSFACEFLUX 
+
+}
+
+#endif
