@@ -1,4 +1,4 @@
-# EWBAMRWatershed
+# EBAMRWatershed
 ## Author: Baky Kallemov, Lawrence Berkeley National Laboratory
 
 This code implements a model for the simulation of coupled surface and subsurface flow
